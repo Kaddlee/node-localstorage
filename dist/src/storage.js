@@ -19,6 +19,7 @@ class Storage {
      */
     constructor(file) {
         this.chached = {};
+        this.sum = 0;
         this.events = {
             rewrite: null,
             add: null,
@@ -31,15 +32,29 @@ class Storage {
     init() {
         try {
             this.chached = JSON.parse((0, fs_1.readFileSync)(this.file).toString());
+            this.updateSum();
         }
         catch {
             (0, fs_1.writeFileSync)(this.file, '{}');
+            this.updateSum();
         }
     }
     event(name, data = null) {
         if (this.events[name] !== null && this.events[name] !== undefined) {
             this.events[name](data);
         }
+    }
+    updateFromFile() {
+        this.chached = JSON.parse((0, fs_1.readFileSync)(this.file).toString());
+    }
+    updateSum() {
+        this.sum = (0, fs_1.statSync)(this.file).size;
+    }
+    checkSum() {
+        if (this.sum === (0, fs_1.statSync)(this.file).size)
+            return true;
+        else
+            return false;
     }
     /**
      * Set your callback for event
@@ -88,6 +103,7 @@ class Storage {
     addItem(name, value) {
         this.chached[name] = value;
         (0, fs_1.writeFileSync)(this.file, JSON.stringify(this.chached));
+        this.updateSum();
         this.event("add", { name, value });
     }
     /**
@@ -98,6 +114,8 @@ class Storage {
     removeItem(name) {
         this.event("remove", { name: name, value: this.chached[name] });
         delete this.chached[name];
+        (0, fs_1.writeFileSync)(this.file, JSON.stringify(this.chached));
+        this.updateSum();
     }
     /**
      * Get item from storage
@@ -106,8 +124,15 @@ class Storage {
      * @return {any} Any type value
      */
     getItem(name) {
-        this.event("get", this.chached[name]);
-        return this.chached[name];
+        if (this.checkSum()) {
+            this.event("get", this.chached[name]);
+            return this.chached[name];
+        }
+        else {
+            this.updateFromFile();
+            this.event("get", this.chached[name]);
+            return this.chached[name];
+        }
     }
 }
 exports.Storage = Storage;

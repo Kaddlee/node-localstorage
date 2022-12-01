@@ -7,13 +7,14 @@
 
 */
 
-import { readFileSync, writeFileSync } from "fs";
+import { readFileSync, writeFileSync, statSync } from "fs";
 
 export class Storage {
 
   public file: string;
 
   private chached: any = {};
+  private sum: number = 0;
   private events: any = {
     rewrite: null,
     add: null,
@@ -32,18 +33,33 @@ export class Storage {
     this.init();
   }
 
-  private init() {
+  private init(): void {
     try {
       this.chached = JSON.parse(readFileSync(this.file).toString());
+      this.updateSum();
     } catch {
       writeFileSync(this.file, '{}');
+      this.updateSum();
     }
   }
 
-  private event(name: string, data: any = null) {
+  private event(name: string, data: any = null): void {
     if (this.events[name] !== null && this.events[name] !== undefined) {
       this.events[name](data);
     }
+  }
+
+  private updateFromFile(): void {
+    this.chached = JSON.parse(readFileSync(this.file).toString());
+  }
+
+  private updateSum(): void {
+    this.sum = statSync(this.file).size;
+  }
+
+  private checkSum(): boolean {
+    if (this.sum === statSync(this.file).size) return true;
+    else return false;
   }
 
 
@@ -61,7 +77,7 @@ export class Storage {
    * @param {string} name Name of event 
    * @param {object} callback Function for event
    */
-  on(name: string, callback: object) {
+  on(name: string, callback: object): void {
     this.events[name] = callback;
   }
 
@@ -95,6 +111,7 @@ export class Storage {
   addItem(name: string, value: any): void {
     this.chached[name] = value;
     writeFileSync(this.file, JSON.stringify(this.chached));
+    this.updateSum();
     this.event("add", {name, value});
   }
 
@@ -106,6 +123,8 @@ export class Storage {
   removeItem(name: string): void {
     this.event("remove", {name: name, value: this.chached[name]});
     delete this.chached[name];
+    writeFileSync(this.file, JSON.stringify(this.chached));
+    this.updateSum();
   }
 
   /** 
@@ -115,7 +134,13 @@ export class Storage {
    * @return {any} Any type value
    */
   getItem(name: string): any {
-    this.event("get", this.chached[name]);
-    return this.chached[name];
+    if (this.checkSum()) {
+      this.event("get", this.chached[name]);
+      return this.chached[name];
+    } else {
+      this.updateFromFile();
+      this.event("get", this.chached[name]);
+      return this.chached[name];
+    }
   }
 }
