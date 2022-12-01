@@ -7,4 +7,6 @@
 
 */
 
-module.exports = require('./dist/src/storage');
+const {Storage} = require('./dist/src/storage')
+
+module.exports = Storage;

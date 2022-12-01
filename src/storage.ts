@@ -9,7 +9,7 @@
 
 import { readFileSync, writeFileSync } from "fs";
 
-export default class Storage {
+export class Storage {
 
   public file: string;
 

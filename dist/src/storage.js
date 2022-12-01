@@ -8,6 +8,7 @@
 
 */
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.Storage = void 0;
 const fs_1 = require("fs");
 class Storage {
     /**
@@ -109,4 +110,4 @@ class Storage {
         return this.chached[name];
     }
 }
-exports.default = Storage;
+exports.Storage = Storage;

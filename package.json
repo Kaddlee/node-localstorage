@@ -2,9 +2,8 @@
   "name": "node-localstorage",
   "version": "0.0.1",
   "description": "",
-  "main": "dist/src/index",
+  "main": "index",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "start": "tsc && node dist/test/index.js",
     "tstest": "node dist/test/index.js",
     "jstest": "node test/index.js"

@@ -1,10 +1,7 @@
 "use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-const storage_1 = __importDefault(require("../src/storage"));
-const storage = new storage_1.default("./storage");
+const storage_1 = require("../src/storage");
+const storage = new storage_1.Storage("./storage");
 // Events
 // You can call this events with your custom callback
 // ADD item event

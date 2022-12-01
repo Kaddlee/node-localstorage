@@ -3,7 +3,7 @@
 A lightweight library that allows you to add simple file storage to your nodeJS project
 
 ```js
-import {Storage} from "node-localstorage";
+const Storage = require("node-localstorage");
 
 const storage = new Storage("./storage");
 

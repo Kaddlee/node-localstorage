@@ -1,4 +1,4 @@
-const {Storage} = require('../index');
+const Storage = require('../index');
 
 const storage = new Storage('./storage');
 
