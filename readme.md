@@ -10,6 +10,11 @@ const storage = new Storage("./storage");
 storage.addItem("name", "any type value");
 ```
 
+## Install
+```
+npm i --save https://github.com/Kaddlee/node-localstorage.git
+```
+
 ## Methods
 
 ```js
