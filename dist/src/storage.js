@@ -1,15 +1,11 @@
 "use strict";
-/*
-
-  node-localstorage
-
-  Powered by @Kaddlee with love
-  https://github.com/Kaddlee
-
-*/
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Storage = void 0;
 const fs_1 = require("fs");
+const crypto_1 = __importDefault(require("crypto"));
 class Storage {
     /**
      *
@@ -19,13 +15,7 @@ class Storage {
      */
     constructor(file) {
         this.chached = {};
-        this.sum = 0;
-        this.events = {
-            rewrite: null,
-            add: null,
-            remove: null,
-            get: null
-        };
+        this.events = {};
         this.file = file;
         this.init();
     }
@@ -39,7 +29,7 @@ class Storage {
             this.updateSum();
         }
     }
-    event(name, data = null) {
+    event(name, data) {
         if (this.events[name] !== null && this.events[name] !== undefined) {
             this.events[name](data);
         }
@@ -48,13 +38,19 @@ class Storage {
         this.chached = JSON.parse((0, fs_1.readFileSync)(this.file).toString());
     }
     updateSum() {
-        this.sum = (0, fs_1.statSync)(this.file).size;
+        this.sum = this.fileSum();
     }
     checkSum() {
-        if (this.sum === (0, fs_1.statSync)(this.file).size)
+        if (this.sum === this.fileSum())
             return true;
         else
             return false;
+    }
+    fileSum(algorithm = 'md5', encoding = 'hex') {
+        return crypto_1.default
+            .createHash(algorithm)
+            .update((0, fs_1.readFileSync)(this.file).toString(), 'utf8')
+            .digest(encoding);
     }
     /**
      * Set your callback for event
@@ -62,7 +58,7 @@ class Storage {
      * use (add, remove, get, rewrite) events
      *
      * ```js
-     *  storage.on("add", (item: any) => {
+     *  storage.on("add", (item) => {
      *    console.log(`You add ${item.name} with value ${item.value}`);
      *  }
      * ```
@@ -112,7 +108,7 @@ class Storage {
      * @param {string} name Name of key
      */
     removeItem(name) {
-        this.event("remove", { name: name, value: this.chached[name] });
+        this.event("remove", { name, value: this.chached[name] });
         delete this.chached[name];
         (0, fs_1.writeFileSync)(this.file, JSON.stringify(this.chached));
         this.updateSum();
@@ -124,15 +120,10 @@ class Storage {
      * @return {any} Any type value
      */
     getItem(name) {
-        if (this.checkSum()) {
-            this.event("get", this.chached[name]);
-            return this.chached[name];
-        }
-        else {
+        if (!this.checkSum())
             this.updateFromFile();
-            this.event("get", this.chached[name]);
-            return this.chached[name];
-        }
+        this.event("get", { name, value: this.chached[name] });
+        return this.chached[name];
     }
 }
 exports.Storage = Storage;
